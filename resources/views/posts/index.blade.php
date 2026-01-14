@@ -66,7 +66,6 @@
                 }
             });
 
-            // Helper to add a row to the table
             function appendPostRow(post) {
                 let row = `<tr id="row_${post.id}">
                         <td>${post.id}</td>
@@ -82,7 +81,6 @@
                 $('#postTable').prepend(row);
             }
 
-            // Helper to update a row in the table
             function updatePostRow(post) {
                 let row = `<td>${post.id}</td>
                            <td>${post.title}</td>
@@ -97,7 +95,6 @@
             }
 
             $(document).ready(function() {
-                // Delegate events so new rows are handled too
 
                 // Add post
                 $('.add_post').click(function(e) {
@@ -123,11 +120,8 @@
                             $('#description').val('');
                             $('#price').val('');
 
-                            // Only add the row if we are on page 1. Else, you may want to do an ajax refresh or switch to page 1.
-                            // We'll just prepend the new row for smoother UX.
                             appendPostRow(response.post);
 
-                            // Trigger event handlers for new row
                         },
                         error: function(error) {
                             $('.errMsgContainer').html('');
@@ -143,7 +137,7 @@
                     });
                 });
 
-                // Show post (delegated)
+                // Show post
                 $(document).on('click', '.showBtn', function() {
                     let id = $(this).data('id');
                     $.get('/posts/' + id, function(res) {
@@ -154,7 +148,7 @@
                     });
                 });
 
-                // edit post (delegated)
+                // edit post
                 $(document).on('click', '.editBtn', function() {
                     let id = $(this).data('id');
                     $('#updateModal .errMsgContainer').html('');
@@ -188,7 +182,7 @@
                         },
                         success: function(response) {
                             $('#updateModal').modal('hide');
-                            // update the specific row in the table
+
                             updatePostRow(response.post);
                         },
                         error: function(error) {
@@ -205,7 +199,7 @@
                     });
                 });
 
-                // Delete post (delegated)
+                // Delete post
                 $(document).on('click', '.deleteBtn', function() {
                     let id = $(this).data('id');
                     if (!confirm('Are you sure?')) return;
