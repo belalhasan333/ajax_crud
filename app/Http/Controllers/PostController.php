@@ -4,59 +4,128 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class PostController extends Controller
 {
+    /**
+     * Display a listing of the posts.
+     */
     public function index()
     {
-        $posts = Post::latest()->paginate(5);
+        $posts = Post::orderByDesc('id')->paginate(5);
         return view('posts.index', compact('posts'));
     }
 
+    /**
+     * Store a newly created post in storage
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required',
-            'description' => 'required',
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|max:255',
+            'description' => 'required|string',
             'price' => 'required|numeric',
         ]);
 
-        $post = Post::create($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
+        $post = Post::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $request->price
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'post' => $post,
+            'message' => 'Post created successfully.'
+        ]);
+    }
+
+    /**
+     * Display the specified post
+     */
+    public function show($id)
+    {
+        $post = Post::find($id);
+        if (!$post) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Post not found.'
+            ], 404);
+        }
         return response()->json([
             'status' => true,
             'post' => $post
         ]);
     }
 
-    public function show(Post $post)
+    /**
+     * Update
+     */
+    public function update(Request $request, $id)
     {
-        return response()->json($post);
-    }
+        $post = Post::find($id);
 
-    public function update(Request $request, Post $post)
-    {
-        $validated = $request->validate([
-            'title' => 'required',
-            'description' => 'required',
+        if (!$post) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Post not found.'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|max:255',
+            'description' => 'required|string',
             'price' => 'required|numeric',
         ]);
 
-        $post->update($validated);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $post->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $request->price
+        ]);
 
         return response()->json([
             'status' => true,
-            'post' => $post
+            'post' => $post,
+            'message' => 'Post updated successfully.'
         ]);
     }
 
-    public function destroy(Post $post)
+    /**
+     * Remove the specified post from storage (AJAX).
+     */
+    public function destroy($id)
     {
+        $post = Post::find($id);
+
+        if (!$post) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Post not found.'
+            ], 404);
+        }
+
         $post->delete();
 
         return response()->json([
             'status' => true,
-            'message' => 'Post deleted successfully'
+            'message' => 'Post deleted successfully.'
         ]);
     }
 }
